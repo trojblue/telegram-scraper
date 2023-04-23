@@ -34,7 +34,7 @@ class TelegramUserImageScraper():
         api_hash = config.get("pyrogram", "api_hash")
         return Client("my_account", api_id, api_hash, sleep_threshold=self.sleep_threshold)
 
-    async def download_image(self, message):
+    async def _download_image(self, message):
         app = self.app
         unique_id = message.photo.file_unique_id
         date_str = message.date.strftime("%Y-%m-%d")
@@ -67,7 +67,7 @@ class TelegramUserImageScraper():
                 print(f"FloodWait triggered: Waiting for {wait_time} seconds")
                 await asyncio.sleep(wait_time)
 
-    async def scrape(self, start_date: str, end_date: str):
+    async def _scrape(self, start_date: str, end_date: str):
         """downloads all images sent by a specific user in a group chat, between the start and end dates
         :param group_id: group id
         :param user_id: user id
@@ -83,10 +83,12 @@ class TelegramUserImageScraper():
                     message_date = message.date.replace(tzinfo=None)  # Remove timezone info for comparison
 
                     if start_date <= message_date <= end_date:
-                        no_need_wait = await self.download_image(message)
+                        no_need_wait = await self._download_image(message)
                         if not no_need_wait:
                             time.sleep(5)
 
+    def scrape(self, start_date: str, end_date: str):
+        self.app.run(self._scrape(start_date, end_date))
 
 def do_job():
     # Replace with the user_id of the specific user
