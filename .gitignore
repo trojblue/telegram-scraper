@@ -2,7 +2,7 @@ config.ini
 _tensor_logs
 my_account.session
 my_account.session-journal
-
+downloaded_images
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
