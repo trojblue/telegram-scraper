@@ -9,6 +9,10 @@ config.read("config.ini")
 api_id = config.get("pyrogram", "api_id")
 api_hash = config.get("pyrogram", "api_hash")
 
+
+# CHANGE ME
+TARGET_USER_FIRST_NAME = ""
+
 async def main():
     async with Client("my_account", api_id, api_hash) as app:
         groups = [dialog.chat async for dialog in app.get_dialogs() ]
@@ -22,8 +26,9 @@ async def main():
         for m in members:
             user = m.user
             first_name = user.first_name
-            if "FEN" in first_name:
+            if TARGET_USER_FIRST_NAME in first_name:
                 print(f"ID: {user.id}, Username: {user.username}, Name: {first_name}")
 
 
-asyncio.run(main())
+if __name__ == '__main__':
+    asyncio.run(main())

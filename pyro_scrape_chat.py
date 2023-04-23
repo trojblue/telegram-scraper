@@ -89,7 +89,6 @@ class TelegramUserImageScraper():
 
 
 def do_job():
-
     # Replace with the user_id of the specific user
     TARGET_GROUP_ID = -1001893538021
     TARGET_USER_ID = 5668980055
