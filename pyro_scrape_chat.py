@@ -6,6 +6,7 @@ from tqdm.auto import tqdm
 from pyrogram import Client, filters
 from pyrogram.errors import FloodWait
 import datetime
+from pyrogram import enums
 
 """
 Create a config.ini file, and put these inside:
@@ -58,7 +59,7 @@ class TelegramUserImageScraper():
                 # Check if the downloaded file is empty
                 if os.path.getsize(file_path) == 0:
                     print(f"Downloaded file {unique_id} is empty. Waiting for 30 seconds.")
-                    await asyncio.sleep(30)
+                    await asyncio.sleep(1)
                 else:
                     break
 
@@ -67,28 +68,20 @@ class TelegramUserImageScraper():
                 print(f"FloodWait triggered: Waiting for {wait_time} seconds")
                 await asyncio.sleep(wait_time)
 
-    async def _scrape(self, start_date: str, end_date: str):
-        """downloads all images sent by a specific user in a group chat, between the start and end dates
-        :param group_id: group id
-        :param user_id: user id
-        :param start_date: start date in the format YYYYMMDD
-        :param end_date: end date in the format YYYYMMDD
-        """
-        start_date = datetime.datetime.strptime(start_date, "%Y%m%d")
-        end_date = datetime.datetime.strptime(end_date, "%Y%m%d")
-
+    async def _scrape_user(self):
         async with self.app:
-            async for message in self.app.get_chat_history(self.group_id, limit=0):
-                if message.photo and message.from_user.id == self.user_id:
-                    message_date = message.date.replace(tzinfo=None)  # Remove timezone info for comparison
+            async for message in self.app.search_messages(self.group_id, from_user=self.user_id):
+                if message.photo:
+                    no_need_wait = await self._download_image(message)
+                    if not no_need_wait:
+                        time.sleep(1)
 
-                    if start_date <= message_date <= end_date:
-                        no_need_wait = await self._download_image(message)
-                        if not no_need_wait:
-                            time.sleep(5)
+    def scrape_user(self):
+        self.app.run(self._scrape_user())
 
-    def scrape(self, start_date: str, end_date: str):
-        self.app.run(self._scrape(start_date, end_date))
+
+from pyrogram.raw.types import InputMessagesFilterPhotos
+
 
 def do_job():
     # Replace with the user_id of the specific user
@@ -99,7 +92,8 @@ def do_job():
         group_id=TARGET_GROUP_ID,
         user_id=TARGET_USER_ID,
     )
-    scraper.scrape(start_date="20230323", end_date="20230417")
+    scraper.scrape_user()
+    # scraper.scrape(start_date="20230323", end_date="20230408")
 
 
 if __name__ == '__main__':
